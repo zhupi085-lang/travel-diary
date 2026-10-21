@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旅行手帐</title>
+    <!-- 引入可爱手写与圆体字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&family=ZCOOL+KuaiLe&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #fcf8f2;
+            --card-bg: #ffffff;
+            --primary-color: #8c6b58;
+            --primary-light: #f5ece5;
+            --accent-orange: #e8a87c;
+            --accent-cream: #fff9e6;
+            --text-main: #4a3e3d;
+            --text-muted: #8e8380;
+            --border-color: #ede2d8;
+            --timeline-line: #e2d1c3;
+            --radius-lg: 18px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --shadow-soft: 0 8px 24px rgba(140, 107, 88, 0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Zen Maru Gothic', 'Kiwi Maru', system-ui, sans-serif;
+            line-height: 1.6;
+            padding: 24px;
+            min-height: 100vh;
+            background-image: radial-gradient(#e6d9ce 1.2px, transparent 1.2px);
+            background-size: 24px 24px;
+        }
+
+        .app-container { max-width: 1200px; margin: 0 auto; }
+
+        .header { text-align: center; margin-bottom: 28px; }
+        .main-title {
+            font-family: 'ZCOOL KuaiLe', cursive, sans-serif;
+            font-size: 2.6rem;
+            color: var(--primary-color);
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .paw-icon {
+            font-size: 2rem;
+            color: var(--accent-orange);
+            display: inline-block;
+            animation: bounce 2s infinite ease-in-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .subtitle-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff;
+            padding: 6px 18px;
+            border-radius: 30px;
+            border: 1.5px dashed var(--accent-orange);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .subtitle-input {
+            border: none;
+            outline: none;
+            font-family: 'Kiwi Maru', serif;
+            font-size: 1rem;
+            color: var(--primary-color);
+            background: transparent;
+            text-align: center;
+            width: 280px;
+            font-weight: 500;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            border: 2px solid var(--border-color);
+            padding: 24px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px dashed var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .section-title h2 {
+            font-family: 'ZCOOL KuaiLe', cursive;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .main-content { grid-template-columns: 1fr; }
+        }
+
+        .days-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+
+        .days-list { display: flex; gap: 10px; }
+
+        .day-tab {
+            background: var(--primary-light);
+            color: var(--primary-color);
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .day-tab.active {
+            background: var(--accent-orange);
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(232, 168, 124, 0.3);
+        }
+
+        .delete-day-btn {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            padding: 2px 4px;
+            border-radius: 50%;
+        }
+
+        .add-day-btn {
+            background: #fff;
+            border: 2px dashed var(--accent-orange);
+            color: var(--accent-orange);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .timeline-container {
+            position: relative;
+            padding-left: 28px;
+            margin: 20px 0 30px 10px;
+        }
+
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 10px;
+            bottom: 10px;
+            width: 3px;
+            background: var(--timeline-line);
+            border-radius: 2px;
+        }
+
+        .timeline-node {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -28px;
+            top: 14px;
+            width: 17px;
+            height: 17px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid var(--accent-orange);
+            z-index: 2;
+        }
+
+        .timeline-node.completed .timeline-dot {
+            background: var(--accent-orange);
+        }
+
+        .node-card {
+            background: #fffafa;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .node-card::before {
+            content: '';
+            position: absolute;
+            left: -12px;
+            top: 20px;
+            width: 10px;
+            height: 2px;
+            background: var(--timeline-line);
+        }
+
+        .node-card.completed {
+            opacity: 0.65;
+            background: #f5f5f5;
+        }
+
+        .node-card.completed .node-text {
+            text-decoration: line-through;
+        }
+
+        .node-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .node-time {
+            background: var(--primary-light);
+            color: var(--primary-color);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            font-family: monospace;
+            white-space: nowrap;
+        }
+
+        .node-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-orange);
+            cursor: pointer;
+        }
+
+        .node-text {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            word-break: break-all;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #cc7a7a;
+            cursor: pointer;
+            font-size: 0.95rem;
+            opacity: 0.6;
+            transition: opacity 0.2s ease;
+        }
+
+        .delete-btn:hover { opacity: 1; }
+
+        .add-schedule-form {
+            display: flex;
+            gap: 8px;
+            background: var(--primary-light);
+            padding: 12px;
+            border-radius: var(--radius-md);
+        }
+
+        .time-input, .day-date-input, .select-input {
+            padding: 8px 12px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 20px;
+            outline: none;
+            background: #fff;
+            color: var(--primary-color);
+            font-family: 'Kiwi Maru', serif;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 6px rgba(140, 107, 88, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .time-input { width: 130px; text-align: center; }
+
+        .text-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            outline: none;
+            font-family: inherit;
+        }
+
+        .add-btn {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .folder-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+            align-items: center;
+        }
+
+        .folder-tab {
+            padding: 5px 12px;
+            background: var(--primary-light);
+            color: var(--primary-color);
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1.5px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .folder-tab.active {
+            background: var(--accent-orange);
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .create-folder-box {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .create-folder-box input {
+            flex: 1;
+            padding: 6px 12px;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-md);
+            outline: none;
+            font-size: 0.85rem;
+        }
+
+        .create-folder-box button {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: var(--radius-md);
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .create-kit-box {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .create-kit-box input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-md);
+            outline: none;
+        }
+
+        .create-kit-box select {
+            border-radius: var(--radius-md);
+            max-width: 130px;
+        }
+
+        .create-kit-box button {
+            background: var(--accent-orange);
+            color: #fff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: var(--radius-md);
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .kit-container { display: flex; flex-direction: column; gap: 16px; }
+
+        .kit-card {
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: #fff;
+            overflow: hidden;
+        }
+
+        .kit-header {
+            background: var(--primary-light);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .kit-title-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'ZCOOL KuaiLe', cursive;
+            color: var(--primary-color);
+        }
+
+        .kit-folder-badge {
+            font-size: 0.75rem;
+            background: #fff;
+            color: var(--primary-color);
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            font-family: system-ui;
+        }
+
+        .kit-body {
+            padding: 16px;
+            border-top: 1.5px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .kit-item-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+
+        .kit-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px;
+            background: #fcf8f2;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-family: 'Kiwi Maru', serif;
+        }
+
+        .day-date-bar {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding: 6px 14px;
+            background: var(--primary-light);
+            border: 1.5px dashed var(--accent-orange);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--primary-color);
+            font-family: 'Kiwi Maru', serif;
+        }
+
+        .time-input:hover, .day-date-input:hover {
+            border-color: var(--accent-orange);
+            background: var(--primary-light);
+        }
+
+        .time-input:focus, .day-date-input:focus {
+            border-color: var(--accent-orange);
+            box-shadow: 0 0 0 3px rgba(232, 168, 124, 0.2);
+        }
+
+        input[type="date"], input[type="time"] {
+            accent-color: var(--accent-orange);
+        }
+
+        @media screen and (prefers-color-scheme: light) {
+            input[type="date"], input[type="time"] {
+                filter: hue-rotate(330deg) saturate(140%);
+            }
+        }
+
+        .kit-item.completed {
+            background: #f5f5f5;
+            opacity: 0.6;
+        }
+        .kit-item.completed span {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+        .kit-checkbox {
+            cursor: pointer;
+            accent-color: var(--accent-orange);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- 头部 -->
+        <header class="header">
+            <h1 class="main-title">
+                <span class="paw-icon">🐾</span> 旅行手帐 <span class="paw-icon">🐾</span>
+            </h1>
+            <div class="subtitle-container">
+                <input type="text" id="subtitle-input" class="subtitle-input" value="喵界漫游指南 🐾">
+                <span style="font-size:0.75rem; color:var(--text-muted);">✏️ </span>
+            </div>
+        </header>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 左侧：集中树状行程图 -->
+            <section class="card">
+                <div class="section-title">
+                    <span style="color:var(--accent-orange);">🐾</span>
+                    <h2>行程安排</h2>
+                </div>
+
+                <!-- 天数导航栏 -->
+                <div class="days-bar">
+                    <div class="days-list" id="days-list"></div>
+                    <button class="add-day-btn" id="add-day-btn">+ 增加一天</button>
+                </div>
+                <!-- 每日日期设置栏 -->
+                <div class="day-date-bar">
+                    <span>📅 当前天数日期：</span>
+                    <input type="date" id="current-day-date" class="day-date-input">
+                </div>
+
+                <!-- 集中式树状时间轴 -->
+                <div class="timeline-container" id="timeline-container"></div>
+
+                <!-- 新增行程事项（含时间） -->
+                <div class="add-schedule-form">
+                    <input type="time" id="schedule-time-input" class="time-input" value="09:00">
+                    <input type="text" id="schedule-text-input" class="text-input" placeholder="输入行程，按 Enter 键快速添加...">
+                    <button class="add-btn" id="add-schedule-btn">添加事项</button>
+                </div>
+            </section>
+
+            <!-- 右侧：技能锦囊 -->
+            <section class="card">
+                <div class="section-title">
+                    <span style="color:var(--accent-orange);">🐾</span>
+                    <h2>技能锦囊</h2>
+                </div>
+
+                <!-- 文件夹导航 -->
+                <div class="folder-bar" id="folder-bar"></div>
+
+                <!-- 创建文件夹 -->
+                <div class="create-folder-box">
+                    <input type="text" id="folder-name-input" placeholder="📂 新建分类文件夹名称...">
+                    <button id="add-folder-btn">+ 新增文件夹</button>
+                </div>
+
+                <!-- 新建锦囊 -->
+                <div class="create-kit-box">
+                    <input type="text" id="kit-title-input" placeholder="锦囊主题，按 Enter 快速添加...">
+                    <select id="kit-folder-select" class="select-input"></select>
+                    <button id="add-kit-btn">新建锦囊</button>
+                </div>
+
+                <div id="kit-container" class="kit-container"></div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>🐾 每一脚印都是喵生风景 🐾</p>
+        </footer>
+    </div>
+
+    <script>
+        let appData = {
+            subtitle: "喵界漫游指南 🐾",
+            currentDayId: "day_1",
+            currentFolderFilter: "all",
+            folders: [
+                { id: "folder_1", name: "出行准备" },
+                { id: "folder_2", name: "当地交通" }
+            ],
+            days: [{ id: "day_1", name: "Day 1", date: "2026-10-25" }],
+            schedules: {
+                "day_1": [
+                    { id: 1, time: "09:30", text: "到达目的地，办理酒店入住 🏨", completed: false },
+                    { id: 2, time: "14:00", text: "猫咪主题咖啡馆下午茶 ☕", completed: true },
+                    { id: 3, time: "18:30", text: "夜市吃地道小吃 🍢", completed: false }
+                ]
+            },
+            kits: [
+                {
+                    id: "kit_1",
+                    folderId: "folder_1",
+                    title: "✈️ 签证与出入境准备",
+                    items: [
+                        { text: "护照原件及复印件", completed: false },
+                        { text: "打印行程单与酒店预订单", completed: false }
+                    ]
+                },
+                {
+                    id: "kit_2",
+                    folderId: "folder_2",
+                    title: "🚕 当地打车/交通攻略",
+                    items: [
+                        { text: "下载本地打车App并绑定卡", completed: false },
+                        { text: "准备少量现金零钱", completed: false }
+                    ]
+                }
+            ]
+        };
+
+        function loadData() {
+            try {
+                const saved = localStorage.getItem('freya_diary_tree_v1');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && parsed.days && parsed.schedules) {
+                        appData = parsed;
+                        if (!appData.folders) appData.folders = [];
+                        if (!appData.currentFolderFilter) appData.currentFolderFilter = 'all';
+                    }
+                }
+            } catch(e) { console.warn("存储受限，开启临时内存模式"); }
+        }
+
+        function saveData() {
+            try { localStorage.setItem('freya_diary_tree_v1', JSON.stringify(appData)); } catch(e) {}
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            
+            const subInput = document.getElementById('subtitle-input');
+            if (appData.subtitle) subInput.value = appData.subtitle;
+            subInput.addEventListener('input', (e) => {
+                appData.subtitle = e.target.value;
+                saveData();
+            });
+
+            document.getElementById('add-day-btn').addEventListener('click', addNewDay);
+            document.getElementById('add-schedule-btn').addEventListener('click', addScheduleItem);
+            document.getElementById('add-kit-btn').addEventListener('click', addNewKit);
+            document.getElementById('add-folder-btn').addEventListener('click', addNewFolder);
+
+            document.getElementById('schedule-text-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') addScheduleItem();
+            });
+            document.getElementById('kit-title-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') addNewKit();
+            });
+            document.getElementById('folder-name-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') addNewFolder();
+            });
+
+            renderDaysBar();
+
+            const dateInput = document.getElementById('current-day-date');
+            if (dateInput) {
+                const currentDayObj = appData.days.find(d => d.id === appData.currentDayId);
+                if (currentDayObj) dateInput.value = currentDayObj.date || '';
+
+                dateInput.addEventListener('input', (e) => {
+                    const currentDayObj = appData.days.find(d => d.id === appData.currentDayId);
+                    if (currentDayObj) {
+                        currentDayObj.date = e.target.value;
+                        saveData();
+                    }
+                });
+            }
+
+            renderTimeline();
+            renderFolders();
+            renderKits();
+        });
+
+        function renderDaysBar() {
+            const container = document.getElementById('days-list');
+            container.innerHTML = '';
+
+            appData.days.forEach(day => {
+                const tab = document.createElement('div');
+                tab.className = `day-tab ${day.id === appData.currentDayId ? 'active' : ''}`;
+                tab.innerHTML = `
+                    <span>${day.name}</span>
+                    ${appData.days.length > 1 ? `<span class="delete-day-btn">✕</span>` : ''}
+                `;
+
+                tab.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('delete-day-btn')) {
+                        e.stopPropagation();
+                        deleteDay(day.id);
+                        return;
+                    }
+                    appData.currentDayId = day.id;
+                    saveData();
+                    renderDaysBar();
+                    renderTimeline();
+
+                    const dateInput = document.getElementById('current-day-date');
+                    if (dateInput) {
+                        dateInput.value = day.date || '';
+                    }
+                });
+
+                container.appendChild(tab);
+            });
+        }
+
+        function addNewDay() {
+            const newNum = appData.days.length + 1;
+            const newId = `day_${Date.now()}`;
+            appData.days.push({ id: newId, name: `Day ${newNum}` });
+            appData.schedules[newId] = [];
+            appData.currentDayId = newId;
+            saveData();
+            renderDaysBar();
+            renderTimeline();
+        }
+
+        function deleteDay(dayId) {
+            if (appData.days.length <= 1) return;
+            if (confirm("确定要删除这一天的行程吗？")) {
+                appData.days = appData.days.filter(d => d.id !== dayId);
+                delete appData.schedules[dayId];
+                if (appData.currentDayId === dayId) appData.currentDayId = appData.days[0].id;
+                saveData();
+                renderDaysBar();
+                renderTimeline();
+            }
+        }
+
+        function renderTimeline() {
+            const container = document.getElementById('timeline-container');
+            container.innerHTML = '';
+
+            const list = appData.schedules[appData.currentDayId] || [];
+            list.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+
+            if (list.length === 0) {
+                container.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">今天还没有安排行程，在下方添加一个吧 🐾</p>`;
+                return;
+            }
+
+            list.forEach(item => {
+                const node = document.createElement('div');
+                node.className = `timeline-node ${item.completed ? 'completed' : ''}`;
+                
+                node.innerHTML = `
+                    <div class="timeline-dot"></div>
+                    <div class="node-card ${item.completed ? 'completed' : ''}">
+                        <div class="node-left">
+                            <input type="checkbox" class="node-checkbox" ${item.completed ? 'checked' : ''}>
+                            <span class="node-time">${escapeHtml(item.time || '00:00')}</span>
+                            <span class="node-text">${escapeHtml(item.text)}</span>
+                        </div>
+                        <button class="delete-btn" title="删除行程">🗑️</button>
+                    </div>
+                `;
+
+                node.querySelector('.node-checkbox').addEventListener('change', () => {
+                    item.completed = !item.completed;
+                    saveData();
+                    renderTimeline();
+                });
+
+                node.querySelector('.delete-btn').addEventListener('click', () => {
+                    appData.schedules[appData.currentDayId] = appData.schedules[appData.currentDayId].filter(i => i.id !== item.id);
+                    saveData();
+                    renderTimeline();
+                });
+
+                container.appendChild(node);
+            });
+        }
+
+        function addScheduleItem() {
+            const timeInput = document.getElementById('schedule-time-input');
+            const textInput = document.getElementById('schedule-text-input');
+            const text = textInput.value.trim();
+            if (!text) return;
+
+            if (!appData.schedules[appData.currentDayId]) {
+                appData.schedules[appData.currentDayId] = [];
+            }
+
+            appData.schedules[appData.currentDayId].push({
+                id: Date.now(),
+                time: timeInput.value || "09:00",
+                text: text,
+                completed: false
+            });
+
+            textInput.value = '';
+            saveData();
+            renderTimeline();
+        }
+
+        function addNewFolder() {
+            const input = document.getElementById('folder-name-input');
+            const name = input.value.trim();
+            if (!name) return;
+            appData.folders.push({ id: `folder_${Date.now()}`, name: name });
+            input.value = '';
+            saveData();
+            renderFolders();
+            renderKits();
+        }
+
+        function deleteFolder(folderId) {
+            if (confirm("确定删除这个分类文件夹吗？内部锦囊将变更为未分类状态。")) {
+                appData.folders = appData.folders.filter(f => f.id !== folderId);
+                appData.kits.forEach(k => {
+                    if (k.folderId === folderId) k.folderId = '';
+                });
+                if (appData.currentFolderFilter === folderId) appData.currentFolderFilter = 'all';
+                saveData();
+                renderFolders();
+                renderKits();
+            }
+        }
+
+        function renderFolders() {
+            const folderBar = document.getElementById('folder-bar');
+            const folderSelect = document.getElementById('kit-folder-select');
+            
+            folderBar.innerHTML = '';
+            
+            const allTab = document.createElement('div');
+            allTab.className = `folder-tab ${appData.currentFolderFilter === 'all' ? 'active' : ''}`;
+            allTab.innerText = '🌈 全部';
+            allTab.addEventListener('click', () => {
+                appData.currentFolderFilter = 'all';
+                saveData();
+                renderFolders();
+                renderKits();
+            });
+            folderBar.appendChild(allTab);
+
+            appData.folders.forEach(f => {
+                const tab = document.createElement('div');
+                tab.className = `folder-tab ${appData.currentFolderFilter === f.id ? 'active' : ''}`;
+                tab.innerHTML = `📂 ${escapeHtml(f.name)} <span class="del-folder-btn" style="opacity:0.6; font-size:0.75rem;">✕</span>`;
+                
+                tab.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('del-folder-btn')) {
+                        e.stopPropagation();
+                        deleteFolder(f.id);
+                        return;
+                    }
+                    appData.currentFolderFilter = f.id;
+                    saveData();
+                    renderFolders();
+                    renderKits();
+                });
+                folderBar.appendChild(tab);
+            });
+
+            const uncatTab = document.createElement('div');
+            uncatTab.className = `folder-tab ${appData.currentFolderFilter === 'none' ? 'active' : ''}`;
+            uncatTab.innerText = '📄 未分类';
+            uncatTab.addEventListener('click', () => {
+                appData.currentFolderFilter = 'none';
+                saveData();
+                renderFolders();
+                renderKits();
+            });
+            folderBar.appendChild(uncatTab);
+
+            folderSelect.innerHTML = `<option value="">未分类文件夹</option>`;
+            appData.folders.forEach(f => {
+                folderSelect.innerHTML += `<option value="${f.id}">📂 ${escapeHtml(f.name)}</option>`;
+            });
+        }
+
+        function renderKits() {
+            const container = document.getElementById('kit-container');
+            container.innerHTML = '';
+
+            let filteredKits = appData.kits;
+            if (appData.currentFolderFilter === 'none') {
+                filteredKits = appData.kits.filter(k => !k.folderId);
+            } else if (appData.currentFolderFilter !== 'all') {
+                filteredKits = appData.kits.filter(k => k.folderId === appData.currentFolderFilter);
+            }
+
+            if (filteredKits.length === 0) {
+                container.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">当前分类暂无锦囊 🐾</p>`;
+                return;
+            }
+
+            filteredKits.forEach(kit => {
+                const card = document.createElement('div');
+                card.className = 'kit-card';
+                const folderObj = appData.folders.find(f => f.id === kit.folderId);
+                const folderBadgeHtml = folderObj ? `<span class="kit-folder-badge">📂 ${escapeHtml(folderObj.name)}</span>` : '';
+
+                card.innerHTML = `
+                    <div class="kit-header">
+                        <div class="kit-title-group">
+                            <span>🐾</span>
+                            <span>${escapeHtml(kit.title)}</span>
+                            ${folderBadgeHtml}
+                        </div>
+                        <div>
+                            <button class="delete-btn del-kit" title="删除锦囊">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="kit-body">
+                        <ul class="kit-item-list">
+                        ${kit.items.map((item, idx) => `
+                            <li class="kit-item ${item.completed ? 'completed' : ''}">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <input type="checkbox" class="node-checkbox kit-checkbox" data-index="${idx}" ${item.completed ? 'checked' : ''}>
+                                    <span>${escapeHtml(item.text)}</span>
+                                </div>
+                                <button class="delete-btn delete-kit-item" data-index="${idx}" title="删除要点">🗑️</button>
+                            </li>
+                        `).join('')}
+                        </ul>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" class="text-input kit-item-input" placeholder="新增要点，按 Enter 快速添加...">
+                            <button class="add-btn add-item-btn">添加</button>
+                        </div>
+                    </div>
+                `;
+
+                card.querySelector('.del-kit').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if(confirm("确定删除整个锦囊吗？")) {
+                        appData.kits = appData.kits.filter(k => k.id !== kit.id);
+                        saveData();
+                        renderKits();
+                    }
+                });
+
+                const itemInput = card.querySelector('.kit-item-input');
+                const addBtn = card.querySelector('.add-item-btn');
+                const addItem = () => {
+                    const txt = itemInput.value.trim();
+                    if(!txt) return;
+                    kit.items.push({ text: txt, completed: false });
+                    saveData();
+                    renderKits();
+                };
+                addBtn.addEventListener('click', addItem);
+                itemInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') addItem();
+                });
+
+                card.querySelectorAll('.delete-kit-item').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const idx = parseInt(btn.getAttribute('data-index'));
+                        kit.items.splice(idx, 1);
+                        saveData();
+                        renderKits();
+                    });
+                });
+
+                card.querySelectorAll('.kit-checkbox').forEach(chk => {
+                    chk.addEventListener('change', () => {
+                        const idx = parseInt(chk.getAttribute('data-index'));
+                        kit.items[idx].completed = !kit.items[idx].completed;
+                        saveData();
+                        renderKits();
+                    });
+                });
+
+                container.appendChild(card);
+            });
+        }
+
+        function addNewKit() {
+            const input = document.getElementById('kit-title-input');
+            const folderSelect = document.getElementById('kit-folder-select');
+            const title = input.value.trim();
+            if (!title) return;
+            
+            appData.kits.push({ 
+                id: `kit_${Date.now()}`, 
+                title: title, 
+                folderId: folderSelect.value || '',
+                items: [] 
+            });
+            input.value = '';
+            saveData();
+            renderKits();
+        }
+
+        function escapeHtml(str) {
+            return String(str || '').replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+            }[m]));
+        }
+    </script>
+</body>
+</html>
